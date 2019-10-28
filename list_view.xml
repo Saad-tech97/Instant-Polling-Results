@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_height="match_parent" >
+
+        <TextView
+            android:id="@+id/typeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Type"
+            android:layout_marginTop="5dp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00 : 00"
+            android:layout_marginTop="-26dp"
+            android:textStyle="bold"
+            android:layout_below="@id/typeText"
+            android:layout_marginLeft="310dp"
+            android:textAllCaps="false"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Question"
+            android:layout_below="@id/typeText"
+            android:textStyle="italic"
+            android:layout_marginTop="10dp"
+            android:textAllCaps="false"
+            android:textSize="18sp"/>
+
+</RelativeLayout>

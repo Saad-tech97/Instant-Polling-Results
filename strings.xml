@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Polling</string>
+    <string name="make_a_poll">Make a Poll</string>
+
+    <array name="Type">
+        <item>Sports</item>
+        <item>Political</item>
+        <item>Entertainment</item>
+        <item>Gadgets</item>
+    </array>
+</resources>

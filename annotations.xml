@@ -1,0 +1,5 @@
+<root>
+    <item name='com.firebase.ui.database.FirebaseRecyclerOptions'>
+        <annotation name='java.lang.Deprecated' />
+    </item>
+</root>

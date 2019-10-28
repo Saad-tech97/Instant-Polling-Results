@@ -1,142 +1,134 @@
-package com.example.firstapp;
+package com.example.polling;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int MY_REQUEST_CODE = 7117;
-    TextView popup;
-    EditText email;
-    EditText password;
-    Button signup;
-    FirebaseAuth firebaseAuth;
-    List<AuthUI.IdpConfig> providers;
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference myRef;
+    public static final String POLL_NAME = "poll Answer";
+    public static final String POLL_ID = "poll id";
+    public static final String POLL_OPTION1 = "poll option1";
+    public static final String POLL_OPTION2 = "poll option2";
+    public static final String POLL_OPTION3 = "poll option3";
+    public static final String POLL_OPTION4 = "poll option4";
+    public static final String POLL_TYPE = "poll type";
+    public static final String POLL_QUESTION = "poll question";
+
+    private DatabaseReference databaseReference;
+    private ListView listView;
+    private List<Poll> pollList;
 
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        popup = findViewById(R.id.textView);
-        email = findViewById(R.id.etEmail);
-        signup = findViewById(R.id.btnSignup);
-        password = findViewById(R.id.etPassword);
-        //validate signup btn
-        signup.setEnabled(false);
-        password.setEnabled(false);
 
-        providers = Arrays.asList(
-                new AuthUI.IdpConfig.FacebookBuilder().build());
-                new AuthUI.IdpConfig.GoogleBuilder().build();
+        listView = findViewById(R.id.ListView);
+        pollList = new ArrayList<>();
 
+        databaseReference = FirebaseDatabase.getInstance().getReference("Poll");
 
-        email.addTextChangedListener(new TextWatcher() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            }
+                Poll poll1 = pollList.get(position);
+                Intent new1 = new Intent(getApplicationContext(), AnswerSubmit.class);
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().equals("")) {
-                    password.setEnabled(false);
-                } else {
-                    password.setEnabled(true);
-                }
-            }
+                new1.putExtra(POLL_ID, poll1.getQuestionId());
+                new1.putExtra(POLL_NAME, poll1.getName());
+                new1.putExtra(POLL_OPTION1, poll1.getAddOption1());
+                new1.putExtra(POLL_OPTION2, poll1.getAddOption2());
+                new1.putExtra(POLL_OPTION3, poll1.getAddOption3());
+                new1.putExtra(POLL_OPTION4, poll1.getAddOption4());
+                new1.putExtra(POLL_TYPE, poll1.getType());
+                new1.putExtra(POLL_QUESTION, poll1.getQuestion());
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-
+                startActivity(new1);
             }
         });
-
-        password.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().equals("")) {
-                    signup.setEnabled(false);
-                } else {
-
-
-                    signup.setEnabled(true);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        firebaseAuth = FirebaseAuth.getInstance();
-        signup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                firebaseAuth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(MainActivity.this, "Registered Successfully", Toast.LENGTH_SHORT).show();
-
-                        } else {
-                            Toast.makeText(MainActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                firebaseDatabase = FirebaseDatabase.getInstance();
-                myRef = firebaseDatabase.getReference();
-
-                
-
-
-            }
-
-        });
-
-        popup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            }
-        });
-
 
     }
 
-    public void showSigninOptions() {
-        startActivityForResult(
-                AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).setTheme(R.style.MyTheme)
-                        .build(), MY_REQUEST_CODE);
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                pollList.clear();
+
+                for (DataSnapshot pollSnapshot : dataSnapshot.getChildren()){
+
+                    Poll poll = pollSnapshot.getValue(Poll.class);
+
+                    pollList.add(poll);
+                }
+
+                PollDataRetrive pollDataRetrive = new PollDataRetrive(MainActivity.this, pollList);
+                listView.setAdapter(pollDataRetrive);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void Create(View view) {
+
+        Intent intent = new Intent(this, CreateNewPoll.class);
+        startActivity(intent);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_results, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()){
+
+            case R.id.result:
+                startActivity(new Intent(MainActivity.this, ResultActivity.class));
+                return true;
+
+                default:
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
